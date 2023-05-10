@@ -20,6 +20,9 @@
       <item row="0" column="0">
        <layout class="QVBoxLayout" name="bodeLayout"/>
       </item>
+      <item row="0" column="1">
+       <layout class="QVBoxLayout" name="responseLayout"/>
+      </item>
      </layout>
     </item>
    </layout>
