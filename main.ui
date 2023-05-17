@@ -6,31 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>609</width>
+    <height>715</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">*{
+	font-family:&quot;Microsoft Yahei&quot;,
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,1">
-      <item row="0" column="0">
-       <layout class="QVBoxLayout" name="bode_mag_plot"/>
-      </item>
-      <item row="0" column="1">
-       <layout class="QVBoxLayout" name="step_resp_plot"/>
-      </item>
-      <item row="1" column="0">
-       <layout class="QVBoxLayout" name="bode_phase_plot"/>
-      </item>
-      <item row="1" column="1">
-       <layout class="QVBoxLayout" name="nyquist_plot"/>
-      </item>
-     </layout>
-    </item>
     <item row="1" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
@@ -84,14 +73,123 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Update</string>
+           <string>num</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QLineEdit" name="num_input">
+          <property name="text">
+           <string>[1]</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>den</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="den_input">
+          <property name="text">
+           <string>[1]</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_3">
+          <property name="text">
+           <string>Load</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>拓扑选择</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <item>
+         <property name="text">
+          <string>Buck</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Boost</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>载入参数</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0">
+      <item row="1" column="0">
+       <layout class="QVBoxLayout" name="bode_phase_plot" stretch="">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMinimumSize</enum>
+        </property>
+       </layout>
+      </item>
+      <item row="0" column="1">
+       <layout class="QVBoxLayout" name="step_resp_plot" stretch="">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMinimumSize</enum>
+        </property>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <layout class="QVBoxLayout" name="nyquist_plot" stretch=""/>
+      </item>
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="bode_mag_plot" stretch="">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMinimumSize</enum>
+        </property>
        </layout>
       </item>
      </layout>
@@ -103,7 +201,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>609</width>
      <height>22</height>
     </rect>
    </property>
@@ -119,8 +217,8 @@
    <slot>set_freq_range()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>154</x>
-     <y>552</y>
+     <x>147</x>
+     <y>533</y>
     </hint>
     <hint type="destinationlabel">
      <x>166</x>
@@ -135,8 +233,8 @@
    <slot>set_freq_range()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>503</x>
-     <y>559</y>
+     <x>316</x>
+     <y>533</y>
     </hint>
     <hint type="destinationlabel">
      <x>526</x>
@@ -145,18 +243,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
-   <signal>released()</signal>
+   <sender>pushButton_3</sender>
+   <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>refresh_figure()</slot>
+   <slot>load_num_den()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>738</x>
-     <y>553</y>
+     <x>742</x>
+     <y>524</y>
     </hint>
     <hint type="destinationlabel">
-     <x>714</x>
-     <y>573</y>
+     <x>716</x>
+     <y>493</y>
     </hint>
    </hints>
   </connection>
@@ -164,5 +262,6 @@
  <slots>
   <slot>set_freq_range()</slot>
   <slot>refresh_figure()</slot>
+  <slot>load_num_den()</slot>
  </slots>
 </ui>

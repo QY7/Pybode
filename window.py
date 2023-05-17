@@ -6,6 +6,8 @@ import control as ct
 import matplotlib.pyplot as plt
 
 from PyQt5.QtCore import *
+plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']# 用来正常显示中文标签
+plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 class MainWindow(QMainWindow,Ui_MainWindow):
     def __init__(self, parent=None):
@@ -16,8 +18,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.fig_bode_phase = Figure_Canvas()
         self.fig_step_resp  = Figure_Canvas()
         self.fig_nyquist    = Figure_Canvas()
-        s = ct.tf('s')
-        self.ct_gain = ct.tf([1],[1])
+        self.ct_gain = ct.tf([1],[1,2,10])
         self.ct_sys = self.ct_gain
         self.freq_min = 0.01
         self.freq_max = 100000
@@ -25,11 +26,12 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.bode_phase_plot.addWidget(self.fig_bode_phase)
         self.step_resp_plot.addWidget(self.fig_step_resp)
         self.nyquist_plot.addWidget(self.fig_nyquist)
+        cid = self.fig_bode_mag.mpl_connect('button_press_event', self.add_pole_zero)
         self.shift_state = False
         self.ctrl_state = False
-        self.pole_arr = [100]
+        self.pole_arr = []
         self.zero_arr = []
-        self.draw_figure()
+        self.refresh_figure()
 
     @property
     def freq_min(self):
@@ -38,7 +40,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     @freq_min.setter
     def freq_min(self,val):
         self._freq_min = float(val)
-        print(val)
 
     @property
     def freq_max(self):
@@ -47,7 +48,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     @freq_max.setter
     def freq_max(self,val):
         self._freq_max = float(val)
-        print(val)
 
     @property
     def ct_sys(self):
@@ -65,97 +65,120 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         except:
             return
 
-    def draw_figure(self):
-        ct_sys = self.ct_sys
-        mag,phase,omega = ct.bode(
-            ct_sys,
-            plot=False,
-            omega = np.geomspace(self.freq_min,self.freq_max,100000)
-        )
+    def refresh_nyquist(self):
         try:
-            _,nyquist_contour = ct.nyquist(ct_sys,plot=False,return_contour=True)
-            nyq_resp = ct_sys(nyquist_contour)
+            _,nyquist_contour = ct.nyquist(self.ct_sys,plot=False,return_contour=True)
+            nyq_resp = self.ct_sys(nyquist_contour)
             nyq_x,nyq_y = nyq_resp.real.copy(),nyq_resp.imag.copy()
-            self.fig_nyquist.add_line(
-                nyq_x,
-                nyq_y,
-                x_min = -10,
-                x_max = 10,
-                y_min=-10,
-                y_max = 10
+            self.fig_nyquist.ax.clear()
+            self.fig_nyquist.update_line(
+                idx = 0,
+                x_data = nyq_x,
+                y_data = nyq_y
             )
-            self.fig_nyquist.add_line(
-                nyq_x,
-                -nyq_y,
-                x_min = -10,
-                x_max = 10,
-                y_min=-10,
-                y_max = 10,
-                style='--'
+            self.fig_nyquist.update_line(
+                idx = 1,
+                x_data = nyq_x,
+                y_data = -nyq_y,
+                linestyle= '--'
             )
-        except:
-            pass
-        step_time,step_resp = ct.step_response(ct_sys)
-        self.fig_bode_mag.add_line(
-            omega,20*np.log(mag),
-            x_min=self.freq_min,
-            x_max = self.freq_max,
-            y_min=-100,
-            y_max = 100,
-            xlog=True,
-            ylog=False
-        )
-        self.fig_bode_phase.add_line(
-            omega,phase*180/np.pi,
-            xlog=True,
-            x_min = self.freq_min,
-            x_max = self.freq_max,
-            y_min =-200,
-            y_max = 200
-        )
+            resp_0Hz = abs(ct.evalfr(self.ct_sys, 0))
+            self.fig_nyquist.ax.plot(resp_0Hz,0,'ko')
 
-        self.fig_step_resp.add_line(
-            step_time,
-            step_resp,
+            x_min = min(nyq_x)
+            x_max = max(nyq_x)
+            x_min = x_min*0.8 if x_min>0 else x_min*1.2
+            x_max = x_max*1.2 if x_max>0 else x_max*0.8
+
+            y_max = max(max(nyq_y),max(-nyq_y))*1.2
+            self.fig_nyquist.refresh_fig(
+                x_min= x_min,
+                x_max = x_max,
+                y_min = -y_max,
+                y_max = y_max,
+                title = "Nyquist plot"
+            )
+        except Exception as e:
+            print(e)
+            pass
+    
+    def refresh_step(self):
+        step_time,step_resp = ct.step_response(self.ct_sys)
+        self.fig_step_resp.update_line(
+            idx = 0,
+            x_data = step_time,
+            y_data = step_resp,
+            
+        )
+        y_min = min(step_resp)
+        y_max = max(step_resp)
+
+        y_min = y_min*0.8 if y_min>0 else y_min*1.2
+        y_max = y_max*1.2 if y_max>0 else y_max*0.8
+        self.fig_step_resp.refresh_fig(
             x_min= min(step_time),
             x_max = max(step_time),
-            y_min = 0,
-            y_max = 10
+            y_min = y_min,
+            y_max = y_max,
+            title = "Step response"
         )
-        cid = self.fig_bode_mag.mpl_connect('button_press_event', self.add_pole_zero)
-        self.refresh_figure()
 
-    def refresh_figure(self):
-        self.ct_sys = self.ct_gain
-        for item in self.pole_arr:
-            tmp_blk = ct.tf([1],[1/item,1])
-            self.ct_sys = ct.series(self.ct_sys,tmp_blk)
-        for item in self.zero_arr:
-            tmp_blk = ct.tf([1/item,1],[1])
-            self.ct_sys = ct.series(self.ct_sys,tmp_blk)
-
+    def refresh_bode(self):
         mag,phase,omega = ct.bode(
             self.ct_sys,
             plot=False,
             omega = np.geomspace(self.freq_min,self.freq_max,100000)
         )
+        phase = phase*180/np.pi
         mag = 20*np.log(mag)
-        phase = phase+2*np.pi
-        self.fig_bode_mag.update_fig(
-            x_min=self.freq_min,
-            x_max=self.freq_max,
+        self.fig_bode_mag.update_line(
+            idx = 0,
             x_data = omega,
-            y_data = mag
+            y_data = mag,
         )
 
-        self.fig_bode_phase.update_fig(
+        self.fig_bode_phase.update_line(
+            idx = 0,
+            x_data = omega,
+            y_data = phase,
+            
+        )
+        self.fig_bode_mag.refresh_fig(
             x_min=self.freq_min,
             x_max=self.freq_max,
-            y_min = - np.pi*2,
-            y_max =   np.pi*2,
-            x_data = omega,
-            y_data = phase
+            y_min = min(mag)-10,
+            y_max = max(mag)+10,
+            x_scale = 'log',
+            title = "Bode-mag"
         )
+        self.fig_bode_phase.refresh_fig(
+            x_min=self.freq_min,
+            x_max=self.freq_max,
+            y_min = - 360,
+            y_max =   360,
+            x_scale = 'log',
+            title = "Bode-phase"
+        )
+
+    def refresh_figure(self):
+        self.ct_sys = self.ct_gain
+        for item in self.pole_arr:
+            if(item == 0):
+                tmp_blk = ct.tf([1],[1,0])
+            else:
+                tmp_blk = ct.tf([1],[1/item,1])
+            self.ct_sys = ct.series(self.ct_sys,tmp_blk)
+        for item in self.zero_arr:
+            if(item == 0):
+                tmp_blk = ct.tf([1,0],[1])
+            else:
+                tmp_blk = ct.tf([1/item,1],[1])
+            self.ct_sys = ct.series(self.ct_sys,tmp_blk)
+        self.refresh_bode()
+        self.refresh_nyquist()
+        self.refresh_step()
+        
+
     # 检测键盘回车按键，函数名字不要改，这是重写键盘事件
     def keyPressEvent(self, event):
         print(event.key())
@@ -172,9 +195,18 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
     def add_pole_zero(self,event):
         if self.shift_state:
-            print(f"Adding pole at {event.xdata}")
-            self.pole_arr.append(event.xdata)
+            if(event.xdata != None):
+                print(f"Adding pole at {event.xdata}")
+                self.pole_arr.append(event.xdata)
         elif(self.ctrl_state):
-            print(f"Adding zero at {event.xdata}")
-            self.zero_arr.append(event.xdata)
+            if(event.xdata != None):
+                print(f"Adding zero at {event.xdata}")
+                self.zero_arr.append(event.xdata)
+        self.refresh_figure()
+        
+    def load_num_den(self):
+        num_arr = [float(x) for x in self.num_input.text().strip().replace('[','').replace(']','').split(',')]
+        den_arr = [float(x) for x in self.den_input.text().strip().replace('[','').replace(']','').split(',')]
+
+        self.ct_gain = ct.tf(num_arr,den_arr)
         self.refresh_figure()

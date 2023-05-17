@@ -15,28 +15,36 @@ class Figure_Canvas(FigureCanvas):
         super(Figure_Canvas, self).__init__(self.fig)
         self.ax = self.fig.add_subplot(111)  # 111表示1行1列，第一张曲线图
         
-    def add_line(self, x_data, y_data,x_min,x_max,y_min,y_max,xlog = False,ylog = False,style= '-'):
-        self.line = Line2D(x_data, y_data)  # 绘制2D折线图
+    def insert_line(self,x_data,y_data):
+        self.update_line(idx = len(self.get_children()),x_data= x_data,y_data=y_data)
+        return len(self.get_children())-1
+    
+    def refresh_fig(self,**kwargs):
+        # 全局的样式设置
         self.ax.grid(True)  # 添加网格
-        self.ax.set_xlim(x_min, x_max)
-        self.ax.set_ylim(y_min,y_max)
-
-        self.ax.add_line(self.line)
-        self.line.set_linewidth(2)
-        self.line.set_linestyle(style)
-        self.line.set_color('r')
-        if(xlog):
-            self.ax.set_xscale('log')
-        if(ylog):
-            self.ax.set_yscale('log')
-
-    def update_fig(self,**kwarg):
-        if('x_data' in kwarg):
-            self.line.set_xdata(kwarg['x_data'])
-        if('y_data' in kwarg):
-            self.line.set_ydata(kwarg['y_data'])
-        if('x_min' in kwarg and 'x_max' in kwarg):
-            self.ax.set_xlim([kwarg['x_min'],kwarg['x_max']])
-        if('y_min' in kwarg and 'y_max' in kwarg):
-            self.ax.set_ylim([kwarg['y_min'],kwarg['y_max']])
+        if('y_min' in kwargs and 'y_max' in kwargs):
+            self.ax.set_ylim([kwargs['y_min'],kwargs['y_max']])
+        if('x_scale' in kwargs):
+            self.ax.set_xscale(kwargs['x_scale'])
+        if('y_scale' in kwargs):
+            self.ax.set_xscale(kwargs['y_scale'])
+        if('x_min' in kwargs and 'x_max' in kwargs):
+            self.ax.set_xlim([kwargs['x_min'],kwargs['x_max']])
+        if('title' in kwargs):
+            self.ax.set_title(kwargs['title'])
         self.draw()
+
+    def get_children(self):
+        return self.ax._children
+    
+    def update_line(self,idx,x_data,y_data,linestyle = '-'):
+        if(idx == len(self.get_children())):
+            line = Line2D(x_data,y_data)
+            line.set_linewidth(2)
+            line.set_color('r')
+            line.set_linestyle(linestyle)
+            self.ax.add_line(line)
+        else:
+            self.ax._children[idx].set_xdata(x_data)
+            self.ax._children[idx].set_ydata(y_data)
+    
