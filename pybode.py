@@ -170,7 +170,7 @@ class PyBode(QMainWindow,Ui_MainWindow):
         )
         phase = phase*180/np.pi
         phase %= 360  # 将角度限制在0到360之间
-        phase[phase > 180] -= 360
+        phase[phase > 0] -= 360
         mag = 20*np.log(mag)
         self.fig_bode_mag.update_line(
             idx = 0,
