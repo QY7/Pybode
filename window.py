@@ -205,8 +205,10 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.refresh_figure()
         
     def load_num_den(self):
-        num_arr = [float(x) for x in self.num_input.text().strip().replace('[','').replace(']','').split(',')]
-        den_arr = [float(x) for x in self.den_input.text().strip().replace('[','').replace(']','').split(',')]
-
-        self.ct_gain = ct.tf(num_arr,den_arr)
-        self.refresh_figure()
+        try:
+            num_arr = [float(x) for x in self.num_input.text().strip().replace('[','').replace(']','').split(',')]
+            den_arr = [float(x) for x in self.den_input.text().strip().replace('[','').replace(']','').split(',')]
+            self.ct_gain = ct.tf(num_arr,den_arr)
+            self.refresh_figure()
+        except ValueError:
+            return
