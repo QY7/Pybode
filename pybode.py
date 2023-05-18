@@ -166,26 +166,26 @@ class PyBode(QMainWindow,Ui_MainWindow):
         mag,phase,omega = ct.bode(
             self.ct_sys,
             plot=False,
-            omega = np.geomspace(self.freq_min,self.freq_max,100000)
+            omega = np.geomspace(self.freq_min*2*np.pi,self.freq_max*2*np.pi,100000)
         )
         phase = phase*180/np.pi
         phase %= 360  # 将角度限制在0到360之间
-        phase[phase > 0] -= 360
+        phase-= 360
         mag = 20*np.log(mag)
         self.fig_bode_mag.update_line(
             idx = 0,
-            x_data = omega,
+            x_data = omega/2/np.pi,
             y_data = mag,
         )
 
         self.fig_bode_phase.update_line(
             idx = 0,
-            x_data = omega,
+            x_data = omega/2/np.pi,
             y_data = phase,
             
         )
-        self.fig_bode_mag.ax.plot(poles,gain_at_poles,'g*',linestyle='None')
-        self.fig_bode_mag.ax.plot(zeros,gain_at_zeros,'g',marker='o',linestyle='None', fillstyle='none')
+        self.fig_bode_mag.ax.plot(poles/(2*np.pi),gain_at_poles,'g*',linestyle='None')
+        self.fig_bode_mag.ax.plot(zeros/(2*np.pi),gain_at_zeros,'g',marker='o',linestyle='None', fillstyle='none')
         self.fig_bode_mag.refresh_fig(
             x_min=self.freq_min,
             x_max=self.freq_max,
@@ -198,7 +198,7 @@ class PyBode(QMainWindow,Ui_MainWindow):
             x_min=self.freq_min,
             x_max=self.freq_max,
             y_min = - 360,
-            y_max =   360,
+            y_max =   90,
             x_scale = 'log',
             title = "Bode-phase"
         )
@@ -212,7 +212,6 @@ class PyBode(QMainWindow,Ui_MainWindow):
 
     # 检测键盘回车按键，函数名字不要改，这是重写键盘事件
     def keyPressEvent(self, event):
-        print(event.key())
         if(event.key() == 16777248):
             self.shift_state = True
         elif(event.key() == 16777249):
@@ -227,11 +226,9 @@ class PyBode(QMainWindow,Ui_MainWindow):
     def add_pole_zero(self,event):
         if self.shift_state:
             if(event.xdata != None):
-                print(f"Adding pole at {event.xdata}")
                 self.pole_arr.append(event.xdata)
         elif(self.ctrl_state):
             if(event.xdata != None):
-                print(f"Adding zero at {event.xdata}")
                 self.zero_arr.append(event.xdata)
         self.refresh_figure()
         
