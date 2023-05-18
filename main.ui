@@ -20,7 +20,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
+    <item row="2" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -113,7 +113,7 @@
       </item>
      </layout>
     </item>
-    <item row="2" column="0">
+    <item row="3" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_7">
       <item>
        <widget class="QLabel" name="label_5">
@@ -166,7 +166,7 @@
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0">
       <item row="1" column="0">
-       <layout class="QVBoxLayout" name="bode_phase_plot" stretch="">
+       <layout class="QVBoxLayout" name="bode_phase_plot">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -176,21 +176,88 @@
        </layout>
       </item>
       <item row="0" column="1">
-       <layout class="QVBoxLayout" name="step_resp_plot" stretch="">
+       <layout class="QVBoxLayout" name="step_resp_plot">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
        </layout>
       </item>
       <item row="1" column="1">
-       <layout class="QVBoxLayout" name="nyquist_plot" stretch=""/>
+       <layout class="QVBoxLayout" name="nyquist_plot"/>
       </item>
       <item row="0" column="0">
-       <layout class="QVBoxLayout" name="bode_mag_plot" stretch="">
+       <layout class="QVBoxLayout" name="bode_mag_plot">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
        </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>幅值裕度</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="mag_margin_label">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>对应频率</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="wcg_label">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>相位裕度</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="phase_margin_label">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>对应频率</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="wcp_label">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="stable_label">
+        <property name="text">
+         <string>Stable</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

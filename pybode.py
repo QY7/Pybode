@@ -9,17 +9,18 @@ from PyQt5.QtCore import *
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']# 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
-class MainWindow(QMainWindow,Ui_MainWindow):
+INF_VALUE = float('inf')
+
+class PyBode(QMainWindow,Ui_MainWindow):
     def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super(PyBode, self).__init__(parent)
         self.setupUi(self)
         self.show()
         self.fig_bode_mag   = Figure_Canvas()
         self.fig_bode_phase = Figure_Canvas()
         self.fig_step_resp  = Figure_Canvas()
         self.fig_nyquist    = Figure_Canvas()
-        self.ct_gain = ct.tf([1],[1,2,10])
-        self.ct_sys = self.ct_gain
+        self.ct_gain = ct.tf([100],[1,2,10])
         self.freq_min = 0.01
         self.freq_max = 100000
         self.bode_mag_plot.addWidget(self.fig_bode_mag)
@@ -30,7 +31,12 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.shift_state = False
         self.ctrl_state = False
         self.pole_arr = []
-        self.zero_arr = []
+        self.zero_arr = [100]
+        self.wcp = float('inf')
+        self.wcp = float('inf')
+        self.gm = float('inf')
+        self.pm = float('inf')
+        self.stable = False
         self.refresh_figure()
 
     @property
@@ -51,11 +57,21 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
     @property
     def ct_sys(self):
-        return self._ct_sys
+        sys_tmp = self.ct_gain
+        for item in self.pole_arr:
+            if(item == 0):
+                tmp_blk = ct.tf([1],[1,0])
+            else:
+                tmp_blk = ct.tf([1],[1/item,1])
+            sys_tmp = ct.series(sys_tmp,tmp_blk)
+        for item in self.zero_arr:
+            if(item == 0):
+                tmp_blk = ct.tf([1,0],[1])
+            else:
+                tmp_blk = ct.tf([1/item,1],[1])
+            sys_tmp = ct.series(sys_tmp,tmp_blk)
+        return sys_tmp
     
-    @ct_sys.setter
-    def ct_sys(self,sys_str):
-        self._ct_sys = sys_str
 
     def set_freq_range(self):
         try:
@@ -101,7 +117,22 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         except Exception as e:
             print(e)
             pass
-    
+        
+    def refresh_margin(self):
+        gm, pm, wcg, wcp = ct.margin(self.ct_sys)
+        self.gm = gm
+        self.pm = pm
+        self.wcg = wcg
+        self.wcp = wcp
+        self.mag_margin_label.setText(f"{gm:.1f}")
+        self.phase_margin_label.setText(f"{pm:.1f}")
+        self.wcg_label.setText(f"{wcg:.1f}")
+        self.wcp_label.setText(f"{wcp:.1f}")
+        if(gm > 1 and pm > 0):
+            self.stable_label.setText("Stable")
+        else:
+            self.stable_label.setText("Unstable")
+
     def refresh_step(self):
         step_time,step_resp = ct.step_response(self.ct_sys)
         self.fig_step_resp.update_line(
@@ -124,12 +155,22 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         )
 
     def refresh_bode(self):
+        zeros = ct.zero(self.ct_sys)
+        poles = ct.pole(self.ct_sys)
+        poles = np.abs(poles)
+        zeros = np.abs(zeros)
+        gain_at_poles = 20*np.log(np.array([abs(ct.evalfr(self.ct_sys,x*1j)) for x in poles]))
+        gain_at_zeros = 20*np.log(np.array([abs(ct.evalfr(self.ct_sys,x*1j)) for x in zeros]))
+        self.fig_bode_mag.ax.clear()
+       
         mag,phase,omega = ct.bode(
             self.ct_sys,
             plot=False,
             omega = np.geomspace(self.freq_min,self.freq_max,100000)
         )
         phase = phase*180/np.pi
+        phase %= 360  # 将角度限制在0到360之间
+        phase[phase > 180] -= 360
         mag = 20*np.log(mag)
         self.fig_bode_mag.update_line(
             idx = 0,
@@ -143,6 +184,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             y_data = phase,
             
         )
+        self.fig_bode_mag.ax.plot(poles,gain_at_poles,'g*',linestyle='None')
+        self.fig_bode_mag.ax.plot(zeros,gain_at_zeros,'g',marker='o',linestyle='None', fillstyle='none')
         self.fig_bode_mag.refresh_fig(
             x_min=self.freq_min,
             x_max=self.freq_max,
@@ -161,19 +204,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         )
 
     def refresh_figure(self):
-        self.ct_sys = self.ct_gain
-        for item in self.pole_arr:
-            if(item == 0):
-                tmp_blk = ct.tf([1],[1,0])
-            else:
-                tmp_blk = ct.tf([1],[1/item,1])
-            self.ct_sys = ct.series(self.ct_sys,tmp_blk)
-        for item in self.zero_arr:
-            if(item == 0):
-                tmp_blk = ct.tf([1,0],[1])
-            else:
-                tmp_blk = ct.tf([1/item,1],[1])
-            self.ct_sys = ct.series(self.ct_sys,tmp_blk)
+        self.refresh_margin()
         self.refresh_bode()
         self.refresh_nyquist()
         self.refresh_step()
